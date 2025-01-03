@@ -1,0 +1,57 @@
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+  }
+  h1 {
+    text-align: center;
+    color: #4caf50;
+  }
+  .action-buttons {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+  }
+  button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    color: white;
+    background: #4caf50;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #45a049;
+  }
+  button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+  th,
+  td {
+    padding: 1rem;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  th {
+    background: #f4f4f4;
+    color: #333;
+  }
+  pre {
+    background: #e8e8e8;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow: auto;
+    max-height: 300px;
+  }
+  
