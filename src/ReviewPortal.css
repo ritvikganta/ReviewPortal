@@ -1,57 +1,82 @@
 .container {
-    max-width: 900px;
-    margin: auto;
-    background: white;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   h1 {
     text-align: center;
-    color: #4caf50;
+    color: #27557A;
   }
   .action-buttons {
-    margin-bottom: 1.5rem;
     display: flex;
     justify-content: space-between;
+    margin-bottom: 20px;
   }
   button {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    padding: 10px 20px;
+    font-size: 16px;
     color: white;
-    background: #4caf50;
+    background-color: #27557A;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: background-color 0.3s;
   }
   button:hover {
-    background: #45a049;
+    background-color: #27557A;
   }
   button:disabled {
-    background: #ccc;
+    background-color: #ccc;
     cursor: not-allowed;
   }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0;
+  .tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
   }
-  th,
-  td {
-    padding: 1rem;
-    border: 1px solid #ddd;
-    text-align: left;
-  }
-  th {
-    background: #f4f4f4;
-    color: #333;
-  }
-  pre {
-    background: #e8e8e8;
-    padding: 1rem;
+  .tabs button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #27557A;
+    background-color: white;
+    border: 2px solid #27557A;
     border-radius: 4px;
-    overflow: auto;
-    max-height: 300px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  .tabs button.active {
+    background-color: #27557A;
+    color: white;
+  }
+  .user-card {
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .user-card img {
+    max-width: 100px;
+    height: auto;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
+  .verification-actions {
+    margin-top: 10px;
+  }
+  .verification-actions label {
+    margin-right: 10px;
+  }
+  .verification-actions textarea {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
   }
   
