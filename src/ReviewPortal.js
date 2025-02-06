@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
+import crypto from "crypto";
 import "./ReviewPortal.css";
 
 const BASE_URL = "https://24btc08zqk.execute-api.us-west-2.amazonaws.com/prod";
+const SECRET_KEY = "4UkZ5SwheeMHyLyf8SGyRwdJWoRVItuOxH9VcjiG990UGLyCE0Zo9xeZ23ZxOCoT"; 
 
-const credentials = {
-  username: "cm9tYW4ucnViYW55a0Bvbml4LXN5c3RlbXMuY29t", 
-  password: "ciMxMTExMTE=" 
+const encryptPayload = (text) => {
+  const key = crypto.createHash("sha256").update(SECRET_KEY).digest();
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+
+  let encrypted = cipher.update(text, "utf-8", "hex");
+  encrypted += cipher.final("hex");
+
+  return iv.toString("hex") + ":" + encrypted;
 };
 
 const ReviewPortal = () => {
@@ -21,12 +29,18 @@ const ReviewPortal = () => {
     const fetchTokenOnMount = async () => {
       updateStatus("Fetching ID token...");
       try {
-        const res = await fetch(`${BASE_URL}/users/auth/get-id-token`, {
+        const encryptedUsername = encryptPayload("cm9tYW4ucnViYW55a0Bvbml4LXN5c3RlbXMuY29t");
+        const encryptedPassword = encryptPayload("ciMxMTExMTE=");
+
+        const res = await fetch(`${BASE_URL}/auth/get-id-token`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(credentials),
+          body: JSON.stringify({
+            username: encryptedUsername,
+            password: encryptedPassword,
+          }),
           mode: "cors",
-          credentials: "include"
+          credentials: "include",
         });
 
         if (!res.ok) {
@@ -55,23 +69,22 @@ const ReviewPortal = () => {
     setStatus({ message, success });
   };
 
-  // Using the corrected GET /verification endpoint
   const loadUsersForReview = async (key = null) => {
     if (!idToken) return;
 
     updateStatus("Loading users for review...");
     try {
-      const url = `${BASE_URL}/verification?limit=10${
+      const url = `${BASE_URL}/verifications?limit=10${
         key ? `&lastEvaluatedKey=${key}` : ""
       }`;
 
       const res = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${idToken}`
+          Authorization: `Bearer ${idToken}`,
         },
         mode: "cors",
-        credentials: "include"
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Error fetching users");
@@ -95,7 +108,6 @@ const ReviewPortal = () => {
     }
   };
 
-  // Using the corrected PUT /verification/{userId} endpoint
   const updateUserVerificationEntry = async (userId, status, notes = "") => {
     if (!idToken) return;
 
@@ -105,26 +117,25 @@ const ReviewPortal = () => {
     const payload = {
       newStatus,
       reviewerName,
-      notes
+      notes,
     };
 
     try {
-      const res = await fetch(`${BASE_URL}/verification/${userId}`, {
+      const res = await fetch(`${BASE_URL}/verifications/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify(payload),
         mode: "cors",
-        credentials: "include"
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Error updating verification status");
 
       updateStatus("Verification status updated successfully.", true);
 
-      // Update the local state for the specific user
       setUsers((prevUsers) =>
         prevUsers.map((u) =>
           u.userId === userId
@@ -137,34 +148,6 @@ const ReviewPortal = () => {
       updateStatus("Failed to update verification status.", false);
     }
   };
-
-  const handleStatusChange = (userId, status) => {
-    setUserStates((prevStates) => ({
-      ...prevStates,
-      [userId]: {
-        ...prevStates[userId],
-        selectedStatus: status
-      }
-    }));
-  };
-
-  const handleNotesChange = (userId, notes) => {
-    setUserStates((prevStates) => ({
-      ...prevStates,
-      [userId]: {
-        ...prevStates[userId],
-        notes
-      }
-    }));
-  };
-
-  const filteredUsers = users.filter((user) => {
-    if (activeTab === "active") {
-      return user.verificationStatus === "pending";
-    } else {
-      return user.verificationStatus !== "pending";
-    }
-  });
 
   return (
     <div className="container">
@@ -210,24 +193,11 @@ const ReviewPortal = () => {
         </div>
       )}
 
-      {filteredUsers.map((user) => (
+      {users.map((user) => (
         <div key={user.userId} className="user-card">
           <h3>{`${user.firstName} ${user.lastName}`}</h3>
           <p>User Type: {user.userType}</p>
           <p>Verification Status: {user.verificationStatus}</p>
-
-          {user.signedUrls?.length > 0 && (
-            <div style={{ display: "flex", gap: "1rem", margin: "8px 0" }}>
-              {user.signedUrls.map((url, idx) => (
-                <img
-                  key={`${user.userId}-doc-${idx}`}
-                  src={url}
-                  alt="ID Document"
-                  style={{ width: 100, height: 100, objectFit: "cover" }}
-                />
-              ))}
-            </div>
-          )}
 
           <div className="verification-actions">
             {user.verificationStatus === "pending" ? (
