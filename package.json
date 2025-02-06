@@ -5,12 +5,12 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "cra-template": "1.2.0",
+    "crypto": "^1.0.1",
     "crypto-browserify": "^3.12.1",
     "process": "^0.11.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scripts": "5.0.1",
-
     "web-vitals": "^4.2.4"
   },
   "scripts": {
