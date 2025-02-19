@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from "react";
-import crypto from "crypto";
+import CryptoJS from "crypto-js";
 import "./ReviewPortal.css";
 
 const BASE_URL = "https://24btc08zqk.execute-api.us-west-2.amazonaws.com/prod";
 const SECRET_KEY = "4UkZ5SwheeMHyLyf8SGyRwdJWoRVItuOxH9VcjiG990UGLyCE0Zo9xeZ23ZxOCoT"; 
 
+// Use CryptoJS to encrypt payload
 const encryptPayload = (text) => {
-  const key = crypto.createHash("sha256").update(SECRET_KEY).digest();
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-
-  let encrypted = cipher.update(text, "utf-8", "hex");
-  encrypted += cipher.final("hex");
-
-  return iv.toString("hex") + ":" + encrypted;
+  // Derive a 256-bit key using SHA-256
+  const key = CryptoJS.SHA256(SECRET_KEY);
+  // Generate a random 16-byte IV
+  const iv = CryptoJS.lib.WordArray.random(16);
+  // Encrypt the text using AES-256 in CBC mode with PKCS7 padding
+  const encrypted = CryptoJS.AES.encrypt(text, key, {
+    iv: iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+  // Get the ciphertext as a hex string
+  const encryptedHex = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
+  // Get the IV as a hex string
+  const ivHex = iv.toString(CryptoJS.enc.Hex);
+  // Concatenate IV and ciphertext with a colon
+  return ivHex + ":" + encryptedHex;
 };
 
 const ReviewPortal = () => {
@@ -29,15 +38,15 @@ const ReviewPortal = () => {
     const fetchTokenOnMount = async () => {
       updateStatus("Fetching ID token...");
       try {
-        const encryptedUsername = encryptPayload("cm9tYW4ucnViYW55a0Bvbml4LXN5c3RlbXMuY29t");
-        const encryptedPassword = encryptPayload("ciMxMTExMTE=");
+        const encryptedUsername = encryptPayload("1853f15511ba556d7a4c10738abcc6bb:8b8e2e513b65a6d3f732a0f88570d2d482b960d254df27a28e987bc30aeea473");
+        const encryptedPassword = encryptPayload("7f6da1cc8094a20a48a156f311b8ee8a:d71471f6f9cf87e4929d660de59de23c");
 
-        const res = await fetch(`${BASE_URL}/auth/get-id-token`, {
+        const res = await fetch(`${BASE_URL}/users/auth/get-id-token`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            username: encryptedUsername,
-            password: encryptedPassword,
+            username: "1853f15511ba556d7a4c10738abcc6bb:8b8e2e513b65a6d3f732a0f88570d2d482b960d254df27a28e987bc30aeea473",
+            password: "7f6da1cc8094a20a48a156f311b8ee8a:d71471f6f9cf87e4929d660de59de23c",
           }),
           mode: "cors",
           credentials: "include",
@@ -61,7 +70,7 @@ const ReviewPortal = () => {
 
   useEffect(() => {
     if (idToken) {
-      loadUsersForReview();
+      listUsersForReview();
     }
   }, [idToken]);
 
@@ -69,7 +78,7 @@ const ReviewPortal = () => {
     setStatus({ message, success });
   };
 
-  const loadUsersForReview = async (key = null) => {
+  const listUsersForReview = async (key = null) => {
     if (!idToken) return;
 
     updateStatus("Loading users for review...");
@@ -103,7 +112,7 @@ const ReviewPortal = () => {
       setNextKey(data.nextKey);
       updateStatus("Users loaded successfully.", true);
     } catch (err) {
-      console.error("Fetch error (loadUsersForReview):", err);
+      console.error("Fetch error (listUsersForReview):", err);
       updateStatus("Failed to load users.", false);
     }
   };
@@ -167,7 +176,7 @@ const ReviewPortal = () => {
       </div>
 
       <div className="action-buttons">
-        <button onClick={() => loadUsersForReview()} disabled={!idToken}>
+        <button onClick={() => listUsersForReview()} disabled={!idToken}>
           Load Users for Review
         </button>
       </div>
@@ -227,7 +236,7 @@ const ReviewPortal = () => {
       ))}
 
       {nextKey && (
-        <button onClick={() => loadUsersForReview(nextKey)}>Load More</button>
+        <button onClick={() => listUsersForReview(nextKey)}>Load More</button>
       )}
     </div>
   );
